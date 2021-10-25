@@ -37,16 +37,27 @@ def judge_super_get_up(data, user_id, now_time, interval):
 # 进行早安并更新数据
 def morning_and_update(_current_dir, data, user_id, now_time):
     # 起床并写数据
+    sleep_time = datetime.datetime.strptime(data[str(user_id)]['sleep_time'], '%Y-%m-%d %H:%M:%S')
+    in_sleep = now_time - sleep_time
+    secs = in_sleep.total_seconds()
+    day = secs // (3600 * 24)
+    hour = (secs - day * 3600 * 24) // 3600
+    minute = (secs - day * 3600 * 24 - hour * 3600) // 60
+    second = secs - day * 3600 * 24 - hour * 3600 - minute * 60
+    # 睡觉时间小于24小时就同时给出睡眠时长
+    in_sleep_tmp = 0
+    if day == 0:
+        in_sleep_tmp = str(int(hour)) + '时' + str(int(minute)) + '分' + str(int(second)) + '秒'
     data[str(user_id)]['get_up_time'] = now_time
     data[str(user_id)]['morning_count'] = int(data[str(user_id)]['morning_count']) + 1
     # 判断是今天第几个起床的
     data['today_count']['morning'] = int(data['today_count']['morning']) + 1
     with open(_current_dir, "w", encoding="UTF-8") as f:
         f.write(json.dumps(data, ensure_ascii=False, indent=4, cls=DateEncoder))
-    return data['today_count']['morning']
+    return data['today_count']['morning'], in_sleep_tmp
 
 # 返回早安信息
-def get_morning_msg(group_id, user_id):
+def get_morning_msg(group_id, user_id, sex_str):
     # 读取配置文件
     current_dir = os.path.join(os.path.dirname(__file__), 'config.json')
     file = open(current_dir, 'r', encoding = 'UTF-8')
@@ -86,6 +97,9 @@ def get_morning_msg(group_id, user_id):
         return msg
 
     # 当前面条件均符合的时候，允许早安
-    num = morning_and_update(_current_dir, data, user_id, now_time)
-    msg = f'早安成功！你是今天第{num}个起床的群友'
+    num, in_sleep = morning_and_update(_current_dir, data, user_id, now_time)
+    if in_sleep == 0:
+        msg = f'早安成功！你是今天第{num}个起床的{sex_str}'
+    else:
+        msg = f'早安成功！你的睡眠时长为{in_sleep}。\n你是今天第{num}个起床的{sex_str}'
     return msg

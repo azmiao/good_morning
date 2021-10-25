@@ -49,14 +49,28 @@ def night_and_update(_current_dir, data, user_id, now_time):
     else:
         data[str(user_id)]['sleep_time'] = now_time
         data[str(user_id)]['night_count'] = int(data[str(user_id)]['night_count']) + 1
+    # 计算清醒的时长
+    get_up_time = datetime.datetime.strptime(data[str(user_id)]['get_up_time'], '%Y-%m-%d %H:%M:%S')
+    in_day = now_time - get_up_time
+    secs = in_day.total_seconds()
+    day = secs // (3600 * 24)
+    hour = (secs - day * 3600 * 24) // 3600
+    minute = (secs - day * 3600 * 24 - hour * 3600) // 60
+    second = secs - day * 3600 * 24 - hour * 3600 - minute * 60
+    in_day_tmp = 0
+    # 当上次起床时间不是初始值0
+    if get_up_time != 0:
+        # 清醒时间小于24小时就同时给出睡眠时长
+        if day == 0:
+            in_day_tmp = str(int(hour)) + '时' + str(int(minute)) + '分' + str(int(second)) + '秒'
+    # 判断是今天第几个睡觉的
     data['today_count']['night'] = int(data['today_count']['night']) + 1
     with open(_current_dir, "w", encoding="UTF-8") as f:
         f.write(json.dumps(data, ensure_ascii=False, indent=4, cls=DateEncoder))
-    # 判断是今天第几个睡觉的
-    return data['today_count']['night']
+    return data['today_count']['night'], in_day_tmp
 
 # 返回晚安信息
-def get_night_msg(group_id, user_id):
+def get_night_msg(group_id, user_id, sex_str):
     # 读取配置文件
     current_dir = os.path.join(os.path.dirname(__file__), 'config.json')
     file = open(current_dir, 'r', encoding = 'UTF-8')
@@ -92,6 +106,9 @@ def get_night_msg(group_id, user_id):
                 return msg
 
     # 当数据里没有这个人或者前面条件均符合的时候，允许晚安
-    num = night_and_update(_current_dir, data, user_id, now_time)
-    msg = f'晚安成功！你是今天第{num}个睡觉的群友'
+    num, in_day = night_and_update(_current_dir, data, user_id, now_time)
+    if in_day == 0:
+        msg = f'晚安成功！你是今天第{num}个睡觉的{sex_str}'
+    else:
+        msg = f'晚安成功！你今天的清醒时长为{in_day}。\n你是今天第{num}个睡觉的{sex_str}'
     return msg

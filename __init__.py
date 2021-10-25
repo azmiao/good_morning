@@ -48,14 +48,30 @@ async def create_json(bot, ev):
 async def good_morning(bot, ev):
     user_id = ev.user_id
     group_id = ev.group_id
-    msg = get_morning_msg(group_id, user_id)
+    mem_info = await bot.get_group_member_info(group_id = group_id, user_id = user_id)
+    sex = mem_info['sex']
+    if sex == 'male':
+        sex_str = '少年'
+    elif sex == 'female':
+        sex_str = '少女'
+    else:
+        sex_str = '群友'
+    msg = get_morning_msg(group_id, user_id, sex_str)
     await bot.send(ev, msg)
 
 @sv.on_fullmatch('晚安')
 async def good_night(bot, ev):
     user_id = ev.user_id
     group_id = ev.group_id
-    msg = get_night_msg(group_id, user_id)
+    mem_info = await bot.get_group_member_info(group_id = group_id, user_id = user_id)
+    sex = mem_info['sex']
+    if sex == 'male':
+        sex_str = '少年'
+    elif sex == 'female':
+        sex_str = '少女'
+    else:
+        sex_str = '群友'
+    msg = get_night_msg(group_id, user_id, sex_str)
     await bot.send(ev, msg)
 
 # 23:59清除一天的早安晚安计数

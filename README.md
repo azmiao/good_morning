@@ -12,9 +12,11 @@
 
 https://github.com/azmiao/good_morning
 
-## 引流博客地址
+## 更新日志
 
-https://www.594594.xyz/2021/10/24/good_morning_for_hoshino/
+21-10-25    v1.1    新增睡眠时长和清醒时长显示，新增性别显示，尽量还原酷Q版功能吧
+
+21-10-23    v1.0    大概能用了？
 
 ## 功能
 
