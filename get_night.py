@@ -44,23 +44,21 @@ def night_and_update(_current_dir, data, user_id, now_time):
             "night_count": 1,
             "sleep_time": now_time
         }
-        data.setdefault(user_id, mem_data)
+        data.setdefault(str(user_id), mem_data)
     # 若有就更新数据
     else:
         data[str(user_id)]['sleep_time'] = now_time
         data[str(user_id)]['night_count'] = int(data[str(user_id)]['night_count']) + 1
-    # 计算清醒的时长
-    get_up_time = datetime.datetime.strptime(data[str(user_id)]['get_up_time'], '%Y-%m-%d %H:%M:%S')
-    in_day = now_time - get_up_time
-    secs = in_day.total_seconds()
-    day = secs // (3600 * 24)
-    hour = (secs - day * 3600 * 24) // 3600
-    minute = (secs - day * 3600 * 24 - hour * 3600) // 60
-    second = secs - day * 3600 * 24 - hour * 3600 - minute * 60
+    # 当上次起床时间不是初始值0,就计算清醒的时长
     in_day_tmp = 0
-    # 当上次起床时间不是初始值0
-    if get_up_time != 0:
-        # 清醒时间小于24小时就同时给出睡眠时长
+    if data[str(user_id)]['get_up_time'] != 0:
+        get_up_time = datetime.datetime.strptime(data[str(user_id)]['get_up_time'], '%Y-%m-%d %H:%M:%S')
+        in_day = now_time - get_up_time
+        secs = in_day.total_seconds()
+        day = secs // (3600 * 24)
+        hour = (secs - day * 3600 * 24) // 3600
+        minute = (secs - day * 3600 * 24 - hour * 3600) // 60
+        second = secs - day * 3600 * 24 - hour * 3600 - minute * 60
         if day == 0:
             in_day_tmp = str(int(hour)) + '时' + str(int(minute)) + '分' + str(int(second)) + '秒'
     # 判断是今天第几个睡觉的
