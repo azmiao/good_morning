@@ -3,14 +3,26 @@ import hoshino
 import os
 from .get_morning import *
 from .get_night import *
+from .charge import *
 
 sv = Service('good_morning', bundle='早安晚安')
 
-sv_help = '''[早安晚安初始化] 初始化，限超级管理员
+sv_help = '''== 命令 ==
 [早安] 早安喵
 [晚安] 晚安喵
 [我的作息] 看看自己的作息
-[群友作息] 看看今天几个人睡觉或起床了'''.strip()
+[群友作息] 看看今天几个人睡觉或起床了
+[早安晚安配置] 查看超级管理员设置的配置
+
+== 限超级管理员的设置 ==
+[早安晚安初始化] 首次使用请初始化
+= 配置(详情看文档) =
+[早安开启 xx] 开启某个配置
+[早安关闭 xx] 关闭某个配置
+[早安设置 xx x] 设置数值
+[晚安开启 xx] 开启某个配置
+[晚安关闭 xx] 关闭某个配置
+[晚安设置 xx x] 设置数值'''.strip()
 
 #帮助界面
 @sv.on_fullmatch('早安晚安帮助')
@@ -119,4 +131,162 @@ async def group_status(bot, ev):
     moring_count = data['today_count']['morning']
     night_count = data['today_count']['night']
     msg = f'今天已经有{moring_count}位群友起床了，{night_count}群友睡觉了'
+    await bot.send(ev, msg)
+
+# 配置管理
+@sv.on_fullmatch('早安晚安配置')
+async def config_settings(bot, ev):
+    msg = get_current_json()
+    await bot.send(ev, msg)
+
+# morning
+mor_switcher = {
+    '时限': 'get_up_intime',
+    '多重起床': 'multi_get_up',
+    '超级亢奋': 'super_get_up'
+}
+@sv.on_prefix('早安开启')
+async def morning_enable(bot, ev):
+    if not priv.check_priv(ev, priv.SUPERUSER):
+        msg = '很抱歉您没有权限进行此操作，该操作仅限维护组'
+        await bot.send(ev, msg)
+        return
+    mor_server = ev.message.extract_plain_text()
+    if mor_server not in list(mor_switcher.keys()):
+        msg = f'在早安设置中未找到"{mor_server}"，请确保输入正确，目前可选值有:' + str(list(mor_switcher.keys()))
+        await bot.send(ev, msg)
+        return
+    server = mor_switcher[mor_server]
+    msg = change_settings('morning', server, True)
+    await bot.send(ev, msg)
+
+@sv.on_prefix('早安关闭')
+async def morning_disable(bot, ev):
+    if not priv.check_priv(ev, priv.SUPERUSER):
+        msg = '很抱歉您没有权限进行此操作，该操作仅限维护组'
+        await bot.send(ev, msg)
+        return
+    mor_server = ev.message.extract_plain_text()
+    if mor_server not in list(mor_switcher.keys()):
+        msg = f'在早安设置中未找到"{mor_server}"，请确保输入正确，目前可选值有:' + str(list(mor_switcher.keys()))
+        await bot.send(ev, msg)
+        return
+    server = mor_switcher[mor_server]
+    msg = change_settings('morning', server, False)
+    await bot.send(ev, msg)
+
+@sv.on_prefix('早安设置')
+async def morning_set(bot, ev):
+    if not priv.check_priv(ev, priv.SUPERUSER):
+        msg = '很抱歉您没有权限进行此操作，该操作仅限维护组'
+        await bot.send(ev, msg)
+        return
+    alltext = ev.message.extract_plain_text()
+    args = alltext.split(' ')
+    if args[0] not in list(mor_switcher.keys()):
+        msg = f'在早安设置中未找到"{args[0]}"，请确保输入正确，目前可选值有:' + str(list(mor_switcher.keys()))
+        await bot.send(ev, msg)
+        return
+    server = mor_switcher[args[0]]
+    if server == 'get_up_intime':
+        try:
+            early_time = int(args[1])
+            late_time = int(args[2])
+        except:
+            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[早安设置 时限 1 18] 即1点到18点期间可以起床，数字会自动强制取整'
+            await bot.send(ev, msg)
+            return
+        if early_time < 0 or early_time > 24 or late_time < 0 or late_time > 24:
+            msg = '错误！您设置的时间未在0-24之间，要求：0 <= 时间 <= 24'
+            await bot.send(ev, msg)
+            return
+        msg = change_set_time('morning', server, early_time, late_time)
+    else:
+        try:
+            interval = int(args[1])
+        except:
+            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[早安设置 多重起床 6] 即最小间隔6小时，数字会自动强制取整'
+            await bot.send(ev, msg)
+            return
+        if interval < 0 or interval > 24:
+            msg = '错误！您设置的时间间隔未在0-24之间，要求：0 <= 时间 <= 24'
+            await bot.send(ev, msg)
+            return
+        msg = change_set_time('morning', server, interval)
+    await bot.send(ev, msg)
+
+# night
+nig_switcher = {
+    '时限': 'sleep_intime',
+    '多重睡觉': 'multi_sleep',
+    '超级睡眠': 'super_sleep'
+}
+@sv.on_prefix('晚安开启')
+async def night_enable(bot, ev):
+    if not priv.check_priv(ev, priv.SUPERUSER):
+        msg = '很抱歉您没有权限进行此操作，该操作仅限维护组'
+        await bot.send(ev, msg)
+        return
+    nig_server = ev.message.extract_plain_text()
+    if nig_server not in list(nig_switcher.keys()):
+        msg = f'在晚安设置中未找到"{nig_server}"，请确保输入正确，目前可选值有:' + str(list(nig_switcher.keys()))
+        await bot.send(ev, msg)
+        return
+    server = nig_switcher[nig_server]
+    msg = change_settings('night', server, True)
+    await bot.send(ev, msg)
+
+@sv.on_prefix('晚安关闭')
+async def night_disable(bot, ev):
+    if not priv.check_priv(ev, priv.SUPERUSER):
+        msg = '很抱歉您没有权限进行此操作，该操作仅限维护组'
+        await bot.send(ev, msg)
+        return
+    nig_server = ev.message.extract_plain_text()
+    if nig_server not in list(nig_switcher.keys()):
+        msg = f'在早安设置中未找到"{nig_server}"，请确保输入正确，目前可选值有:' + str(list(nig_switcher.keys()))
+        await bot.send(ev, msg)
+        return
+    server = nig_switcher[nig_server]
+    msg = change_settings('night', server, False)
+    await bot.send(ev, msg)
+
+@sv.on_prefix('晚安设置')
+async def night_set(bot, ev):
+    if not priv.check_priv(ev, priv.SUPERUSER):
+        msg = '很抱歉您没有权限进行此操作，该操作仅限维护组'
+        await bot.send(ev, msg)
+        return
+    alltext = ev.message.extract_plain_text()
+    args = alltext.split(' ')
+    if args[0] not in list(nig_switcher.keys()):
+        msg = f'在早安设置中未找到"{args[0]}"，请确保输入正确，目前可选值有:' + str(list(nig_switcher.keys()))
+        await bot.send(ev, msg)
+        return
+    server = nig_switcher[args[0]]
+    if server == 'sleep_intime':
+        try:
+            early_time = int(args[1])
+            late_time = int(args[2])
+        except:
+            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[晚安设置 时限 18 6] 即18点到第二天6点期间可以起床，数字会自动强制取整，注意第二个数字一定是第二天的时间'
+            await bot.send(ev, msg)
+            return
+        if early_time < 0 or early_time > 24 or late_time < 0 or late_time > 24:
+            msg = '错误！您设置的时间未在0-24之间，要求：0 <= 时间 <= 24'
+            await bot.send(ev, msg)
+            return
+        msg = change_set_time('night', server, early_time, late_time)
+    else:
+        try:
+            interval = int(args[1])
+        except:
+            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[晚安设置 多重睡觉 6] 即最小间隔6小时，数字会自动强制取整'
+            await bot.send(ev, msg)
+            return
+        if interval < 0 or interval > 24:
+            msg = '错误！您设置的时间间隔未在0-24之间，要求：0 <= 时间 <= 24'
+            await bot.send(ev, msg)
+            return
+        msg = change_set_time('night', server, interval)
     await bot.send(ev, msg)
