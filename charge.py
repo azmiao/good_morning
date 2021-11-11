@@ -14,35 +14,35 @@ def get_current_json():
     # morning_config
     get_up_intime = config['morning']['get_up_intime']['enable']
     if get_up_intime:
-        msg = msg + '\n是否要求规定时间内起床：是\n - 最早允许起床时间：' + config['morning']['get_up_intime']['early_time'] + '点\n - 最晚允许起床时间：' + config['morning']['get_up_intime']['late_time'] + '点'
+        msg = msg + '\n是否要求规定时间内起床：是\n - 最早允许起床时间：' + str(config['morning']['get_up_intime']['early_time']) + '点\n - 最晚允许起床时间：' + str(config['morning']['get_up_intime']['late_time']) + '点'
     else:
         msg = msg + '\n是否要求规定时间内起床：否'
     multi_get_up = config['morning']['multi_get_up']['enable']
     if multi_get_up:
         msg = msg + '\n是否允许连续多次起床：是'
     else:
-        msg = msg + '\n是否允许连续多次起床：否\n - 允许的最短起床间隔：' + config['morning']['multi_get_up']['interval'] + '小时'
+        msg = msg + '\n是否允许连续多次起床：否\n - 允许的最短起床间隔：' + str(config['morning']['multi_get_up']['interval']) + '小时'
     super_get_up = config['morning']['super_get_up']['enable']
     if super_get_up:
         msg = msg + '\n是否允许超级亢奋(即睡眠时长很短)：是'
     else:
-        msg = msg + '\n是否允许超级亢奋(即睡眠时长很短)：否\n - 允许的最短睡觉时长：' + config['morning']['super_get_up']['interval'] + '小时'
+        msg = msg + '\n是否允许超级亢奋(即睡眠时长很短)：否\n - 允许的最短睡觉时长：' + str(config['morning']['super_get_up']['interval']) + '小时'
     # night_config
     sleep_intime = config['night']['sleep_intime']['enable']
     if sleep_intime:
-        msg = msg + '\n是否要求规定时间内睡觉：是\n - 最早允许睡觉时间：' + config['night']['sleep_intime']['early_time'] + '点\n - 最晚允许睡觉时间：第二天早上' + config['night']['sleep_intime']['late_time'] + '点'
+        msg = msg + '\n是否要求规定时间内睡觉：是\n - 最早允许睡觉时间：' + str(config['night']['sleep_intime']['early_time']) + '点\n - 最晚允许睡觉时间：第二天早上' + str(config['night']['sleep_intime']['late_time']) + '点'
     else:
         msg = msg + '\n是否要求规定时间内睡觉：否'
     multi_sleep = config['night']['multi_sleep']['enable']
     if multi_sleep:
         msg = msg + '\n是否允许连续多次睡觉：是'
     else:
-        msg = msg + '\n是否允许连续多次睡觉：否\n - 允许的最短睡觉间隔：' + config['night']['multi_sleep']['interval'] + '小时'
+        msg = msg + '\n是否允许连续多次睡觉：否\n - 允许的最短睡觉间隔：' + str(config['night']['multi_sleep']['interval']) + '小时'
     super_sleep = config['night']['super_sleep']['enable']
     if super_sleep:
         msg = msg + '\n是否允许超级睡眠(即清醒时长很短)：是 '
     else:
-        msg = msg + '\n是否允许超级睡眠(即清醒时长很短)：否\n - 允许的最短清醒时长：' + config['night']['super_sleep']['interval'] + '小时'
+        msg = msg + '\n是否允许超级睡眠(即清醒时长很短)：否\n - 允许的最短清醒时长：' + str(config['night']['super_sleep']['interval']) + '小时'
     return msg
 
 # 开启或关闭
