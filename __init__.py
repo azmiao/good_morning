@@ -94,12 +94,13 @@ async def reset_data():
     for each_g in group_list:
         group_id = each_g['group_id']
         current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
-        file = open(current_dir, 'r', encoding = 'UTF-8')
-        data = json.load(file)
-        data['today_count']['morning'] = 0
-        data['today_count']['night'] = 0
-        with open(current_dir, "w", encoding="UTF-8") as f:
-            f.write(json.dumps(data, ensure_ascii=False, indent=4))
+        if os.path.exists(current_dir):
+            file = open(current_dir, 'r', encoding = 'UTF-8')
+            data = json.load(file)
+            data['today_count']['morning'] = 0
+            data['today_count']['night'] = 0
+            with open(current_dir, "w", encoding="UTF-8") as f:
+                f.write(json.dumps(data, ensure_ascii=False, indent=4))
 
 @sv.on_fullmatch('我的作息')
 async def my_status(bot, ev):
