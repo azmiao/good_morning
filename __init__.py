@@ -37,6 +37,8 @@ async def create_json(bot, ev):
         return
     try:
         group_list = await bot.get_group_list()
+        all_num = len(group_list)
+        num = 0
         for each_g in group_list:
             group_id = each_g['group_id']
             _current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
@@ -49,9 +51,12 @@ async def create_json(bot, ev):
                 }
                 with open(_current_dir, "w", encoding="UTF-8") as f:
                     json.dump(data, f, ensure_ascii=False, indent=4)
-                msg = '早安晚安初始化成功！'
-            else:
-                msg = '配置文件已存在请勿重复生成！'
+                num += 1
+        if num:
+            x_num = all_num - num
+            msg = f'检测到{all_num}个群中：\n- {x_num}个群信息已存在\n- {num}个群信息不存在]\n现已为信息不存在的群成功创建文件！'
+        else:
+            msg = f'检测到{all_num}个群的配置信息均已存在，无需再次初始化'
     except:
         msg = '早安晚安初始化失败！'
     await bot.send(ev, msg)
