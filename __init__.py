@@ -5,24 +5,39 @@ from .get_morning import *
 from .get_night import *
 from .charge import *
 
-sv = Service('good_morning', bundle='早安晚安')
+sv_help = '''
+== 命令 ==
 
-sv_help = '''== 命令 ==
 [早安] 早安喵
+
 [晚安] 晚安喵
+
 [我的作息] 看看自己的作息
+
 [群友作息] 看看今天几个人睡觉或起床了
+
 [早安晚安配置] 查看超级管理员设置的配置
 
 == 限超级管理员的设置 ==
+
 [早安晚安初始化] 首次使用请初始化
+
 = 配置(详情看文档) =
+
 [早安开启 xx] 开启某个配置
+
 [早安关闭 xx] 关闭某个配置
+
 [早安设置 xx x] 设置数值
+
 [晚安开启 xx] 开启某个配置
+
 [晚安关闭 xx] 关闭某个配置
-[晚安设置 xx x] 设置数值'''.strip()
+
+[晚安设置 xx x] 设置数值
+'''.strip()
+
+sv = Service('good_morning', bundle='早安晚安', help_=sv_help)
 
 #帮助界面
 @sv.on_fullmatch('早安晚安帮助')
