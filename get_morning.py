@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+from .charge import get_img,random_choice
 
 # 重写构造json类
 class DateEncoder(json.JSONEncoder):
@@ -54,7 +55,7 @@ def morning_and_update(_current_dir, data, user_id, now_time):
     data['today_count']['morning'] = int(data['today_count']['morning']) + 1
     with open(_current_dir, "w", encoding="UTF-8") as f:
         f.write(json.dumps(data, ensure_ascii=False, indent=4, cls=DateEncoder))
-    return data['today_count']['morning'], in_sleep_tmp
+    return data['today_count']['morning'], in_sleep_tmp,secs
 
 # 返回早安信息
 def get_morning_msg(group_id, user_id, sex_str):
@@ -63,6 +64,12 @@ def get_morning_msg(group_id, user_id, sex_str):
     file = open(current_dir, 'r', encoding = 'UTF-8')
     config = json.load(file)
 
+    # 读取自定义回复文件
+    _current_dir = os.path.join(os.path.dirname(__file__), 'word.json')
+    file= open(_current_dir, 'r', encoding = 'UTF-8')
+    word_config= json.load(file)
+    word_data = word_config["moring"]
+    
     # 读取早安晚安数据
     _current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
     file = open(_current_dir, 'r', encoding = 'UTF-8')
@@ -74,32 +81,59 @@ def get_morning_msg(group_id, user_id, sex_str):
         early_time_tmp = config['morning']['get_up_intime']['early_time']
         late_time_tmp = config['morning']['get_up_intime']['late_time']
         if not judge_mor_time(early_time_tmp, late_time_tmp, now_time):
-            msg = f'现在不能早安哦，可以早安的时间为{early_time_tmp}时到{late_time_tmp}时'
+            word = f'现在不能早安哦，可以早安的时间为{early_time_tmp}时到{late_time_tmp}时'
+            img = get_img(False)
+            msg = f"{img}\n{word}"
             return msg
-
+    
     # 当数据里有过这个人的信息就判断:
     if str(user_id) in list(data.keys()):
         # 若关闭连续多次早安，则判断在设定时间内是否多次早安
         if not config['morning']['multi_get_up']['enable'] and data[str(user_id)]['get_up_time'] != 0:
             interval = config['morning']['multi_get_up']['interval']
             if judge_have_mor(data, user_id, now_time, interval):
-                msg = f'{interval}小时内你已经早安过了哦'
+                word = f'{interval}小时内你已经早安过了哦'
+                img = get_img(False)
+                msg = f"{img}\n{word}"
                 return msg
+        
         # 若关闭超级亢奋，则判断睡眠时长是否小于设定时间
         if not config['morning']['super_get_up']['enable']:
             interval = config['morning']['super_get_up']['interval']
             if judge_super_get_up(data, user_id, now_time, interval):
-                msg = f'你可猝死算了吧？现在不能早安哦'
+                word = random_choice(word_data["sleep_little"])
+                img = get_img(False)
+                msg = f"{img}\n{word}"
                 return msg
         # 若没有说明他还没睡过觉呢
     else:
-        msg = '你还没睡过觉呢！不能早安哦'
+        img = get_img(False)
+        word = random_choice(word_data["no_sleep"])
+        msg = f"{img}\n{word}"
         return msg
 
     # 当前面条件均符合的时候，允许早安
-    num, in_sleep = morning_and_update(_current_dir, data, user_id, now_time)
-    if in_sleep == 0:
-        msg = f'早安成功！你是今天第{num}个起床的{sex_str}'
+    num, in_sleep,secs= morning_and_update(_current_dir, data, user_id, now_time)
+    now = int(datetime.datetime.now().strftime("%H"))
+    if  now < 6:
+        time_result = random_choice(word_data["moring_early"])
+        img = get_img(False)
+    elif now >12:
+        time_result = random_choice(word_data["moring_late"])
+        img = get_img(False)
     else:
-        msg = f'早安成功！你的睡眠时长为{in_sleep}。\n你是今天第{num}个起床的{sex_str}'
+        time_result = random_choice(word_data["moring_normal"])
+        img = get_img(True)
+    if in_sleep == 0:
+        word = f'{time_result}你是今天第{num}个起床的{sex_str}'
+        msg = f"{img}\n{word}"
+    else:
+        if  secs < 3600*4:
+            time_result += random_choice(word_data["sleep_little"])
+            img = get_img(False)
+        elif secs >3600*12:
+            time_result += random_choice(word_data["sleep_much"])
+            img = get_img(False)
+        word = f'{time_result}你的睡眠时长为{in_sleep}。\n你是今天第{num}个起床的{sex_str}'
+        msg = f"{img}\n{word}"
     return msg

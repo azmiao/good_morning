@@ -5,44 +5,69 @@ from .get_morning import *
 from .get_night import *
 from .charge import *
 
-sv_help = '''
-== 命令 ==
+sv = Service('good_morning', bundle='早安晚安')
 
+sv_help = '''== 命令 ==
 [早安] 早安喵
-
 [晚安] 晚安喵
-
 [我的作息] 看看自己的作息
-
 [群友作息] 看看今天几个人睡觉或起床了
-
 [早安晚安配置] 查看超级管理员设置的配置
 
 == 限超级管理员的设置 ==
-
 [早安晚安初始化] 首次使用请初始化
-
 = 配置(详情看文档) =
-
 [早安开启 xx] 开启某个配置
-
 [早安关闭 xx] 关闭某个配置
-
 [早安设置 xx x] 设置数值
-
 [晚安开启 xx] 开启某个配置
-
 [晚安关闭 xx] 关闭某个配置
+[晚安设置 xx x] 设置数值'''.strip()
 
-[晚安设置 xx x] 设置数值
-'''.strip()
-
-sv = Service('good_morning', bundle='早安晚安', help_=sv_help)
+def get_sex_str(sex,setting):
+    if not setting:
+        if sex == 'male':
+            sex_str = '少年'
+        elif sex == 'female':
+            sex_str = '少女'
+        else:
+            sex_str = '群友'
+    else:
+        sex_str = '美少女'
+    return sex_str
 
 #帮助界面
 @sv.on_fullmatch('早安晚安帮助')
 async def help(bot, ev):
     await bot.send(ev, sv_help)
+
+@sv.scheduled_job('cron', hour='2', minute='59')
+async def create_json_daily(bot, ev):
+    try:
+        group_list = await bot.get_group_list()
+        all_num = len(group_list)
+        num = 0
+        for each_g in group_list:
+            group_id = each_g['group_id']
+            _current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
+            if not os.path.exists(_current_dir):
+                data = {
+                    "today_count": {
+                        "morning": 0,
+                        "night": 0
+                    }
+                }
+                with open(_current_dir, "w", encoding="UTF-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=4)
+                num += 1
+        if num:
+            x_num = all_num - num
+            msg = f'检测到{all_num}个群中：\n- {x_num}个群信息已存在\n- {num}个群信息不存在]\n现已为信息不存在的群成功创建文件！'
+        else:
+            msg = f'检测到{all_num}个群的配置信息均已存在，无需再次初始化'
+    except:
+        msg = '早安晚安初始化失败！'
+    print(msg)
 
 @sv.on_fullmatch('早安晚安初始化')
 async def create_json(bot, ev):
@@ -76,33 +101,23 @@ async def create_json(bot, ev):
         msg = '早安晚安初始化失败！'
     await bot.send(ev, msg)
 
-@sv.on_fullmatch('早安')
+@sv.on_fullmatch('早安',"早","早上好","起床")
 async def good_morning(bot, ev):
     user_id = ev.user_id
     group_id = ev.group_id
     mem_info = await bot.get_group_member_info(group_id = group_id, user_id = user_id)
     sex = mem_info['sex']
-    if sex == 'male':
-        sex_str = '少年'
-    elif sex == 'female':
-        sex_str = '少女'
-    else:
-        sex_str = '群友'
+    sex_str = get_sex_str(sex,setting)
     msg = get_morning_msg(group_id, user_id, sex_str)
     await bot.send(ev, msg)
 
-@sv.on_fullmatch('晚安')
+@sv.on_fullmatch('晚安',"睡觉","睡觉觉","上床睡觉")
 async def good_night(bot, ev):
     user_id = ev.user_id
     group_id = ev.group_id
     mem_info = await bot.get_group_member_info(group_id = group_id, user_id = user_id)
     sex = mem_info['sex']
-    if sex == 'male':
-        sex_str = '少年'
-    elif sex == 'female':
-        sex_str = '少女'
-    else:
-        sex_str = '群友'
+    sex_str = get_sex_str(sex,setting)
     msg = get_night_msg(group_id, user_id, sex_str)
     await bot.send(ev, msg)
 

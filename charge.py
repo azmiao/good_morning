@@ -1,11 +1,33 @@
 import os
 import json
+import base64
+import random
+
+setting = True
+
+def pic_to_b64(pic_path:str) -> str:
+    with open(pic_path,'rb') as f:
+        base64_str = base64.b64encode(f.read()).decode()
+    return 'base64://' + base64_str
+
+def get_img(good):
+    if good:
+        img_path = os.path.join(os.path.dirname(__file__),'image',"good")
+    else:
+        img_path = os.path.join(os.path.dirname(__file__),'image',"bad")
+    image_name = random.choice(os.listdir(img_path))
+    base64_str = pic_to_b64(f"{img_path}/{image_name}")
+    img =f'[CQ:image,file={base64_str}]'
+    return img
 
 def read_json():
     current_dir = os.path.join(os.path.dirname(__file__), 'config.json')
     file = open(current_dir, 'r', encoding = 'UTF-8')
     config = json.load(file)
     return config
+
+def random_choice(list):
+    return random.choice(list)
 
 # 康康当前配置
 def get_current_json():
