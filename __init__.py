@@ -1,5 +1,4 @@
-from hoshino import Service, priv
-import hoshino
+from hoshino import Service, priv, get_bot
 import os
 from .get_morning import *
 from .get_night import *
@@ -42,7 +41,8 @@ async def help(bot, ev):
     await bot.send(ev, sv_help)
 
 @sv.scheduled_job('cron', hour='2', minute='59')
-async def create_json_daily(bot, ev):
+async def create_json_daily():
+    bot = await get_bot()
     try:
         group_list = await bot.get_group_list()
         all_num = len(group_list)
@@ -124,7 +124,7 @@ async def good_night(bot, ev):
 # 23:59清除一天的早安晚安计数
 @sv.scheduled_job('cron', hour='23', minute='59')
 async def reset_data():
-    bot = hoshino.get_bot()
+    bot = get_bot()
     group_list = await bot.get_group_list()
     for each_g in group_list:
         group_id = each_g['group_id']
