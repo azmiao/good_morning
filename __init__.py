@@ -42,7 +42,7 @@ async def help(bot, ev):
 
 @sv.scheduled_job('cron', hour='2', minute='59')
 async def create_json_daily():
-    bot = await get_bot()
+    bot = get_bot()
     try:
         group_list = await bot.get_group_list()
         all_num = len(group_list)
