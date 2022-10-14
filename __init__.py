@@ -49,7 +49,7 @@ async def create_json_daily():
         num = 0
         for each_g in group_list:
             group_id = each_g['group_id']
-            _current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
+            _current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
             if not os.path.exists(_current_dir):
                 data = {
                     "today_count": {
@@ -62,7 +62,7 @@ async def create_json_daily():
                 num += 1
         if num:
             x_num = all_num - num
-            msg = f'检测到{all_num}个群中：\n- {x_num}个群信息已存在\n- {num}个群信息不存在]\n现已为信息不存在的群成功创建文件！'
+            msg = f'检测到{all_num}个群中：\n- {x_num}个群信息已存在\n- {num}个群信息不存在\n现已为信息不存在的群成功创建文件！'
         else:
             msg = f'检测到{all_num}个群的配置信息均已存在，无需再次初始化'
     except:
@@ -81,7 +81,7 @@ async def create_json(bot, ev):
         num = 0
         for each_g in group_list:
             group_id = each_g['group_id']
-            _current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
+            _current_dir = os.path.join(os.path.dirname(__file__), f'/group_id}.json')
             if not os.path.exists(_current_dir):
                 data = {
                     "today_count": {
@@ -128,7 +128,7 @@ async def reset_data():
     group_list = await bot.get_group_list()
     for each_g in group_list:
         group_id = each_g['group_id']
-        current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
+        current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
         if os.path.exists(current_dir):
             file = open(current_dir, 'r', encoding = 'UTF-8')
             data = json.load(file)
@@ -141,7 +141,7 @@ async def reset_data():
 async def my_status(bot, ev):
     user_id = ev.user_id
     group_id = ev.group_id
-    current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
+    current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
     file = open(current_dir, 'r', encoding = 'UTF-8')
     data = json.load(file)
     if str(user_id) in list(data.keys()):
@@ -161,7 +161,7 @@ async def my_status(bot, ev):
 @sv.on_fullmatch('群友作息')
 async def group_status(bot, ev):
     group_id = ev.group_id
-    current_dir = os.path.join(os.path.dirname(__file__), f'data\{group_id}.json')
+    current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
     file = open(current_dir, 'r', encoding = 'UTF-8')
     data = json.load(file)
     moring_count = data['today_count']['morning']
@@ -229,7 +229,7 @@ async def morning_set(bot, ev):
             early_time = int(args[1])
             late_time = int(args[2])
         except:
-            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[早安设置 时限 1 18] 即1点到18点期间可以起床，数字会自动强制取整'
+            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[早安设置 时限 1 18 即1点到18点期间可以起床，数字会自动强制取整'
             await bot.send(ev, msg)
             return
         if early_time < 0 or early_time > 24 or late_time < 0 or late_time > 24:
