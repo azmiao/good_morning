@@ -81,7 +81,7 @@ async def create_json(bot, ev):
         num = 0
         for each_g in group_list:
             group_id = each_g['group_id']
-            _current_dir = os.path.join(os.path.dirname(__file__), f'/group_id}.json')
+            _current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
             if not os.path.exists(_current_dir):
                 data = {
                     "today_count": {
@@ -229,7 +229,7 @@ async def morning_set(bot, ev):
             early_time = int(args[1])
             late_time = int(args[2])
         except:
-            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[早安设置 时限 1 18 即1点到18点期间可以起床，数字会自动强制取整'
+            msg = '获取参数错误，请确保你输入了正确的命令，样例参考：\n[早安设置 时限 1 18] 即1点到18点期间可以起床，数字会自动强制取整'
             await bot.send(ev, msg)
             return
         if early_time < 0 or early_time > 24 or late_time < 0 or late_time > 24:
