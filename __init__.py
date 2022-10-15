@@ -27,8 +27,6 @@ sv_help = '''== 命令 ==
 [晚安关闭 xx] 关闭某个配置
 [晚安设置 xx x] 设置数值'''.strip()
 
-bot = nonebot.get_bot()
-
 def get_sex_str(sex,setting):
     if not setting:
         if sex == 'male':
@@ -45,6 +43,7 @@ async def get_groups():
     '''
     获取群列表，支持多cq端
     '''
+    bot = nonebot.get_bot()
     gl = []
     for sid in hoshino.get_self_ids():
         gl_ = await bot.get_group_list(self_id=sid)
