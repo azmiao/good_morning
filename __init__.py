@@ -1,5 +1,9 @@
+import traceback
 from hoshino import Service, priv, get_bot
 import os
+
+import hoshino
+import nonebot
 from .get_morning import *
 from .get_night import *
 from .charge import *
@@ -35,6 +39,19 @@ def get_sex_str(sex,setting):
         sex_str = '美少女'
     return sex_str
 
+async def get_groups():
+    '''
+    获取群列表，支持多cq端
+    '''
+    bot = nonebot.get_bot()
+    gl = []
+    for sid in hoshino.get_self_ids():
+        gl_ = await bot.get_group_list(self_id=sid)
+        for g in gl_:
+            if g not in gl:
+                gl.append(g)
+    return gl
+
 #帮助界面
 @sv.on_fullmatch('早安晚安帮助')
 async def help(bot, ev):
@@ -44,7 +61,7 @@ async def help(bot, ev):
 async def create_json_daily():
     bot = get_bot()
     try:
-        group_list = await bot.get_group_list()
+        group_list = await get_groups()
         all_num = len(group_list)
         num = 0
         for each_g in group_list:
@@ -76,7 +93,7 @@ async def create_json(bot, ev):
         await bot.send(ev, msg)
         return
     try:
-        group_list = await bot.get_group_list()
+        group_list = await get_groups()
         all_num = len(group_list)
         num = 0
         for each_g in group_list:
@@ -99,6 +116,7 @@ async def create_json(bot, ev):
             msg = f'检测到{all_num}个群的配置信息均已存在，无需再次初始化'
     except:
         msg = '早安晚安初始化失败！'
+        traceback.print_exc()
     await bot.send(ev, msg)
 
 @sv.on_fullmatch('早安',"早","早上好","起床")
@@ -125,7 +143,7 @@ async def good_night(bot, ev):
 @sv.scheduled_job('cron', hour='23', minute='59')
 async def reset_data():
     bot = get_bot()
-    group_list = await bot.get_group_list()
+    group_list = await get_groups()
     for each_g in group_list:
         group_id = each_g['group_id']
         current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
