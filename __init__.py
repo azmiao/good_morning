@@ -1,5 +1,5 @@
 import traceback
-from hoshino import Service, priv, get_bot
+from hoshino import Service, priv, get_bot, logger
 import os
 
 import hoshino
@@ -66,7 +66,7 @@ async def create_json_daily():
         num = 0
         for each_g in group_list:
             group_id = each_g['group_id']
-            _current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
+            _current_dir = os.path.join(os.path.dirname(__file__), 'data', f'{group_id}.json')
             if not os.path.exists(_current_dir):
                 data = {
                     "today_count": {
@@ -84,7 +84,7 @@ async def create_json_daily():
             msg = f'检测到{all_num}个群的配置信息均已存在，无需再次初始化'
     except:
         msg = '早安晚安初始化失败！'
-    print(msg)
+    logger.exception(msg)
 
 @sv.on_fullmatch('早安晚安初始化')
 async def create_json(bot, ev):
@@ -98,7 +98,7 @@ async def create_json(bot, ev):
         num = 0
         for each_g in group_list:
             group_id = each_g['group_id']
-            _current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
+            _current_dir = os.path.join(os.path.dirname(__file__), 'data', f'{group_id}.json')
             if not os.path.exists(_current_dir):
                 data = {
                     "today_count": {
@@ -146,7 +146,7 @@ async def reset_data():
     group_list = await get_groups()
     for each_g in group_list:
         group_id = each_g['group_id']
-        current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
+        current_dir = os.path.join(os.path.dirname(__file__), 'data', f'{group_id}.json')
         if os.path.exists(current_dir):
             file = open(current_dir, 'r', encoding = 'UTF-8')
             data = json.load(file)
@@ -159,7 +159,7 @@ async def reset_data():
 async def my_status(bot, ev):
     user_id = ev.user_id
     group_id = ev.group_id
-    current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
+    current_dir = os.path.join(os.path.dirname(__file__), 'data', f'{group_id}.json')
     file = open(current_dir, 'r', encoding = 'UTF-8')
     data = json.load(file)
     if str(user_id) in list(data.keys()):
@@ -179,7 +179,7 @@ async def my_status(bot, ev):
 @sv.on_fullmatch('群友作息')
 async def group_status(bot, ev):
     group_id = ev.group_id
-    current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
+    current_dir = os.path.join(os.path.dirname(__file__), 'data', f'{group_id}.json')
     file = open(current_dir, 'r', encoding = 'UTF-8')
     data = json.load(file)
     moring_count = data['today_count']['morning']
