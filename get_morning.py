@@ -71,7 +71,7 @@ def get_morning_msg(group_id, user_id, sex_str):
     word_data = word_config["moring"]
     
     # 读取早安晚安数据
-    _current_dir = os.path.join(os.path.dirname(__file__), f'data/{group_id}.json')
+    _current_dir = os.path.join(os.path.dirname(__file__), 'data', f'{group_id}.json')
     file = open(_current_dir, 'r', encoding = 'UTF-8')
     data = json.load(file)
 
