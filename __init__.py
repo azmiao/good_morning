@@ -59,7 +59,6 @@ async def help(bot, ev):
 
 @sv.scheduled_job('cron', hour='2', minute='59')
 async def create_json_daily():
-    bot = get_bot()
     try:
         group_list = await get_groups()
         all_num = len(group_list)
@@ -81,7 +80,8 @@ async def create_json_daily():
             x_num = all_num - num
             msg = f'检测到{all_num}个群中：\n- {x_num}个群信息已存在\n- {num}个群信息不存在\n现已为信息不存在的群成功创建文件！'
         else:
-            msg = f'检测到{all_num}个群的配置信息均已存在，无需再次初始化'
+            # 配置信息均已存在
+            return
     except:
         msg = '早安晚安初始化失败！'
     logger.exception(msg)
