@@ -1,42 +1,22 @@
-import os
-import json
-import base64
 import random
+from typing import List
 
-setting = True
+from .util import get_config, write_config
 
-def pic_to_b64(pic_path:str) -> str:
-    with open(pic_path,'rb') as f:
-        base64_str = base64.b64encode(f.read()).decode()
-    return 'base64://' + base64_str
 
-def get_img(good):
-    if good:
-        img_path = os.path.join(os.path.dirname(__file__),'image',"good")
-    else:
-        img_path = os.path.join(os.path.dirname(__file__),'image',"bad")
-    image_name = random.choice(os.listdir(img_path))
-    base64_str = pic_to_b64(f"{img_path}/{image_name}")
-    img =f'[CQ:image,file={base64_str}]'
-    return img
+# 随机
+def random_choice(_list: List[str]) -> str:
+    return random.choice(_list)
 
-def read_json():
-    current_dir = os.path.join(os.path.dirname(__file__), 'config.json')
-    file = open(current_dir, 'r', encoding = 'UTF-8')
-    config = json.load(file)
-    return config
-
-def random_choice(list):
-    return random.choice(list)
 
 # 康康当前配置
-def get_current_json():
-    config = read_json()
+async def get_current_json():
+    config = await get_config()
     msg = '超级管理员配置的早安晚安设置如下：'
     # morning_config
-    get_up_intime = config['morning']['get_up_intime']['enable']
-    if get_up_intime:
-        msg = msg + '\n是否要求规定时间内起床：是\n - 最早允许起床时间：' + str(config['morning']['get_up_intime']['early_time']) + '点\n - 最晚允许起床时间：' + str(config['morning']['get_up_intime']['late_time']) + '点'
+    get_up_in_time = config['morning']['get_up_in_time']['enable']
+    if get_up_in_time:
+        msg = msg + '\n是否要求规定时间内起床：是\n - 最早允许起床时间：' + str(config['morning']['get_up_in_time']['early_time']) + '点\n - 最晚允许起床时间：' + str(config['morning']['get_up_in_time']['late_time']) + '点'
     else:
         msg = msg + '\n是否要求规定时间内起床：否'
     multi_get_up = config['morning']['multi_get_up']['enable']
@@ -50,9 +30,9 @@ def get_current_json():
     else:
         msg = msg + '\n是否允许超级亢奋(即睡眠时长很短)：否\n - 允许的最短睡觉时长：' + str(config['morning']['super_get_up']['interval']) + '小时'
     # night_config
-    sleep_intime = config['night']['sleep_intime']['enable']
-    if sleep_intime:
-        msg = msg + '\n是否要求规定时间内睡觉：是\n - 最早允许睡觉时间：' + str(config['night']['sleep_intime']['early_time']) + '点\n - 最晚允许睡觉时间：第二天早上' + str(config['night']['sleep_intime']['late_time']) + '点'
+    sleep_in_time = config['night']['sleep_in_time']['enable']
+    if sleep_in_time:
+        msg = msg + '\n是否要求规定时间内睡觉：是\n - 最早允许睡觉时间：' + str(config['night']['sleep_in_time']['early_time']) + '点\n - 最晚允许睡觉时间：第二天早上' + str(config['night']['sleep_in_time']['late_time']) + '点'
     else:
         msg = msg + '\n是否要求规定时间内睡觉：否'
     multi_sleep = config['night']['multi_sleep']['enable']
@@ -67,36 +47,32 @@ def get_current_json():
         msg = msg + '\n是否允许超级睡眠(即清醒时长很短)：否\n - 允许的最短清醒时长：' + str(config['night']['super_sleep']['interval']) + '小时'
     return msg
 
+
 # 开启或关闭
-def change_settings(day_or_night, server, enable):
+async def change_settings(day_or_night: str, server: str, enable: bool) -> str:
     try:
-        _current_dir = os.path.join(os.path.dirname(__file__), 'config.json')
-        config = read_json()
+        config = await get_config()
         config[day_or_night][server]['enable'] = enable
-        with open(_current_dir, "w", encoding="UTF-8") as f:
-            f.write(json.dumps(config, ensure_ascii=False, indent=4))
+        await write_config(config)
         msg = '配置更新成功！'
     except Exception as e:
         msg = f'配置更新失败！错误原因{e}'
     return msg
 
+
 # 更改时间或间隔
-def change_set_time(*args):
+async def change_set_time(day_or_night: str, server: str, *args) -> str:
     try:
-        _current_dir = os.path.join(os.path.dirname(__file__), 'config.json')
-        config = read_json()
-        day_or_night = args[0]
-        server = args[1]
-        if server == 'get_up_intime' or server == 'sleep_intime':
-            early_time = args[2]
-            late_time = args[3]
+        config = await get_config()
+        if server.endswith('_in_time'):
+            early_time = args[0]
+            late_time = args[1]
             config[day_or_night][server]['early_time'] = early_time
             config[day_or_night][server]['late_time'] = late_time
         else:
-            interval = args[2]
+            interval = args[0]
             config[day_or_night][server]['interval'] = interval
-        with open(_current_dir, "w", encoding="UTF-8") as f:
-            f.write(json.dumps(config, ensure_ascii=False, indent=4))
+        await write_config(config)
         msg = '配置更新成功！'
     except Exception as e:
         msg = f'配置更新失败！错误原因{e}'

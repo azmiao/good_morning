@@ -1,5 +1,5 @@
 /config.json
 
-data/*
+data/
 
 __pycache__/

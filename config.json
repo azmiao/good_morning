@@ -1,6 +1,7 @@
 {
+    "custom_sex": "美少女",
     "morning": {
-        "get_up_intime": {
+        "get_up_in_time": {
             "enable": false,
             "early_time": 1,
             "late_time": 18
@@ -15,7 +16,7 @@
         }
     },
     "night": {
-        "sleep_intime": {
+        "sleep_in_time": {
             "enable": false,
             "early_time": 18,
             "late_time": 6
