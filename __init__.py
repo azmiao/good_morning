@@ -1,7 +1,6 @@
 import os
 
-from yuiChyan import YuiChyan, CQEvent, LakePermissionException, CommandErrorException
-from yuiChyan.core.manager.util import get_all_group_list
+from yuiChyan import YuiChyan, CQEvent, LakePermissionException, CommandErrorException, get_bot
 from yuiChyan.permission import check_permission, SUPERUSER
 from yuiChyan.service import Service
 from .charge import *
@@ -15,7 +14,7 @@ sv = Service('good_morning', help_cmd='早安晚安帮助')
 @sv.scheduled_job(hour='2', minute='59')
 async def create_json_daily():
     try:
-        group_list = await get_all_group_list(None)
+        group_list = await get_bot().get_cached_group_list()
         all_num = len(group_list)
         not_exist_num = 0
         for each_g in group_list:
@@ -65,7 +64,7 @@ async def good_night(bot: YuiChyan, ev: CQEvent):
 # 23:59清除一天的早安晚安计数
 @sv.scheduled_job(hour='23', minute='59')
 async def reset_data():
-    group_list = await get_all_group_list(None)
+    group_list = await get_bot().get_cached_group_list()
     for each_g in group_list:
         group_id = int(each_g['group_id'])
         _current_dir = os.path.join(data_dir, f'{str(group_id)}.json')
